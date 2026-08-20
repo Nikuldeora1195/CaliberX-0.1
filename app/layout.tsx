@@ -1,11 +1,11 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
+import { seo, brand } from '@/config/site'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'withCaliberX — Caliber execution for complex problems',
-  description: 'Bespoke full-stack architectures, autonomous AI agents, and scalable cloud systems for teams building what comes next.',
-  generator: 'withCaliberX',
+  title: seo.title,
+  description: seo.description,
   icons: {
     icon: [
       {
@@ -27,7 +27,10 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   colorScheme: 'light dark',
-  themeColor: '#fbfbf8',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: seo.themeColorLight },
+    { media: '(prefers-color-scheme: dark)', color: seo.themeColorDark },
+  ],
 }
 
 export default function RootLayout({

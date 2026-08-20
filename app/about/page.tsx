@@ -1,2 +1,32 @@
 import { PageShell } from '@/components/page-shell'
-export default function AboutPage() { return <PageShell><main><section className="page-hero"><p className="eyebrow">ABOUT / THE STUDIO</p><h1>Small team.<br /><span>Large surface area.</span></h1><p>withCaliberX is an independent engineering studio for ambitious teams who need a partner that can think across product, systems, AI, and growth.</p></section><section className="page-grid"><article className="page-card wide"><p className="card-label">VISION</p><h2>Make complex technology feel clear, useful, and inevitable.</h2><p>We believe the best technical work is not loud. It gives a team leverage, removes uncertainty, and makes the next decision easier.</p></article><article className="page-card"><p className="card-label">REACH</p><h3>Remote by default. Close by design.</h3><p>Senior collaboration across time zones, with transparent decisions and direct communication.</p></article></section></main></PageShell> }
+import { about } from '@/config/site'
+
+export default function AboutPage() {
+  return (
+    <PageShell>
+      <main>
+        <section className="page-hero">
+          <p className="eyebrow">{about.eyebrow}</p>
+          <h1>
+            {about.heading}<br />
+            <span>{about.headingSpan}</span>
+          </h1>
+          <p>{about.intro}</p>
+        </section>
+
+        <section className="page-grid">
+          {about.cards.map((card) => (
+            <article
+              className={`page-card${card.wide ? ' wide' : ''}`}
+              key={card.label}
+            >
+              <p className="card-label">{card.label}</p>
+              <h2>{card.heading}</h2>
+              <p>{card.body}</p>
+            </article>
+          ))}
+        </section>
+      </main>
+    </PageShell>
+  )
+}
