@@ -1,0 +1,3 @@
+import { db } from '@/lib/db'
+import { leads } from '@/lib/db/schema'
+export default async function LeadsPage() { const rows = await db.select().from(leads); return <main><div className="table-wrap"><table className="admin-table"><thead><tr><th>Client</th><th>Company</th><th>Project</th><th>Budget</th><th>Status</th><th>Received</th></tr></thead><tbody>{rows.map((lead) => <tr key={lead.id}><td><strong>{lead.name}</strong><br /><span>{lead.email}</span></td><td>{lead.company || '—'}</td><td>{lead.projectType || '—'}</td><td>{lead.budget || '—'}</td><td><span className="status-pill">{lead.status}</span></td><td>{lead.createdAt.toLocaleDateString()}</td></tr>)}</tbody></table></div></main> }

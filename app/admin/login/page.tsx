@@ -1,0 +1,5 @@
+'use client'
+import { FormEvent, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { authClient } from '@/lib/auth-client'
+export default function AdminLogin() { const router = useRouter(); const [error, setError] = useState(''); async function submit(e: FormEvent<HTMLFormElement>) { e.preventDefault(); const data = Object.fromEntries(new FormData(e.currentTarget)); const result = await authClient.signIn.email({ email: String(data.email), password: String(data.password) }); if (result.error) setError('Unable to sign in with those details.'); else router.push('/admin') } return <main className="site-shell"><div className="login-card"><p className="eyebrow">ADMIN / SECURE ACCESS</p><h1>Welcome back.</h1><form onSubmit={submit}><input name="email" type="email" required placeholder="Email" /><input name="password" type="password" required placeholder="Password" /><button className="button button-primary">Sign in ↗</button>{error && <p className="form-error">{error}</p>}</form><p className="muted-copy">Admin access is restricted to authorized Caliber team members.</p></div></main> }

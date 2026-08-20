@@ -1,0 +1,3 @@
+import { db } from '@/lib/db'
+import { projects } from '@/lib/db/schema'
+export default async function ProjectsPage() { const rows = await db.select().from(projects); return <main><div className="table-wrap"><table className="admin-table"><thead><tr><th>Title</th><th>Slug</th><th>Category</th><th>Year</th><th>Featured</th></tr></thead><tbody>{rows.map((project) => <tr key={project.id}><td><strong>{project.title}</strong><br /><span>{project.summary}</span></td><td>{project.slug}</td><td>{project.category}</td><td>{project.year}</td><td><span className="status-pill">{project.featured ? 'published' : 'draft'}</span></td></tr>)}</tbody></table></div></main> }
