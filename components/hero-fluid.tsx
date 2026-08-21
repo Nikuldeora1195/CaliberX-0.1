@@ -2,34 +2,8 @@
 
 import { useEffect, useRef } from 'react'
 
-type FluidConfig = {
-  TRIGGER?: 'hover' | 'click'
-  IMMEDIATE?: boolean
-  AUTO?: boolean
-  COLORFUL?: boolean
-  COLOR_UPDATE_SPEED?: number
-  PAUSED?: boolean
-  BACK_COLOR?: { r: number; g: number; b: number }
-  TRANSPARENT?: boolean
-  BRIGHTNESS?: number
-  BLOOM?: boolean
-  BLOOM_ITERATIONS?: number
-  BLOOM_RESOLUTION?: number
-  BLOOM_INTENSITY?: number
-  BLOOM_THRESHOLD?: number
-  DENSITY_DISSIPATION?: number
-  VELOCITY_DISSIPATION?: number
-  PRESSURE?: number
-  CURL?: number
-  SPLAT_RADIUS?: number
-  SPLAT_FORCE?: number
-  SHADING?: boolean
-}
-
 const DARK_BG = { r: 9, g: 10, b: 10 }
-const LIGHT_BG = { r: 255, g: 255, b: 255 }
 
-/** Converts HSV color values to RGB */
 function hsvToRgb(h: number, s: number, v: number) {
   let r = 0, g = 0, b = 0
   const i = Math.floor(h * 6)
@@ -48,177 +22,111 @@ function hsvToRgb(h: number, s: number, v: number) {
   return { r, g, b }
 }
 
-/** Generates fluid colors: 90% purple/violet, 5% dark blue, 5% pink */
-function getDarkBluePurplePinkColor() {
-  const rand = Math.random()
-  let h: number
+/** Purple + dark blue dye (webgl-fluid uses 0–1, default splats peak ~0.15) */
+function getPurpleBlueColor(isLight: boolean) {
+  const roll = Math.random()
+  const h = roll < 0.8
+    ? 0.69 + Math.random() * 0.11
+    : 0.6 + Math.random() * 0.07
 
-  if (rand < 0.90) {
-    // 90% Purple / Violet / Deep Purple (hue 0.69 - 0.81)
-    h = 0.69 + Math.random() * 0.12
-  } else if (rand < 0.95) {
-    // 5% Dark Royal Blue (hue 0.60 - 0.67)
-    h = 0.60 + Math.random() * 0.07
-  } else {
-    // 5% Pink / Magenta (hue 0.84 - 0.92)
-    h = 0.84 + Math.random() * 0.08
+  const rgb = hsvToRgb(h, 0.92 + Math.random() * 0.08, 0.58 + Math.random() * 0.34)
+  const gain = isLight ? 0.24 + Math.random() * 0.12 : 0.14 + Math.random() * 0.1
+
+  return {
+    r: rgb.r * gain,
+    g: rgb.g * gain,
+    b: rgb.b * gain,
   }
-
-  const s = 0.90 + Math.random() * 0.10 // 90-100% saturation
-  const v = 0.35 + Math.random() * 0.35 // deep dark tones
-  return hsvToRgb(h, s, v)
 }
 
-/**
- * HeroFluid / FluidBackground
- * Renders a full-screen WebGL Navier-Stokes fluid & paint simulation canvas across the page.
- *
- * - Listens to mouse/pointer events on `window` and forwards them to `<canvas>`
- * - Operates smoothly over text, buttons, hero elements & content sections
- * - Configured with transparent background, rich pastel blooms & fluid swirls
- */
 export function HeroFluid({ theme }: { theme: 'light' | 'dark' }) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const hostRef = useRef<HTMLDivElement>(null)
+  const isLight = theme === 'light'
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+    const host = hostRef.current
+    if (!host) return
 
-    let cancelled = false
+    const canvas = document.createElement('canvas')
+    canvas.className = 'hero-fluid-canvas'
+    canvas.setAttribute('aria-hidden', 'true')
+    host.appendChild(canvas)
+
+    let alive = true
+
+    const forwardPointer = (clientX: number, clientY: number, type: 'move' | 'down') => {
+      const rect = canvas.getBoundingClientRect()
+      const event = new MouseEvent(type === 'move' ? 'mousemove' : 'mousedown', {
+        clientX,
+        clientY,
+        bubbles: true,
+      })
+      Object.defineProperty(event, 'offsetX', { get: () => clientX - rect.left })
+      Object.defineProperty(event, 'offsetY', { get: () => clientY - rect.top })
+      canvas.dispatchEvent(event)
+    }
+
+    const onPointerMove = (e: PointerEvent) => forwardPointer(e.clientX, e.clientY, 'move')
+    const onPointerDown = (e: PointerEvent) => forwardPointer(e.clientX, e.clientY, 'down')
+
+    window.addEventListener('pointermove', onPointerMove, { passive: true })
+    window.addEventListener('pointerdown', onPointerDown, { passive: true })
+
     import('webgl-fluid').then((mod) => {
-      if (cancelled || !canvasRef.current) return
+      if (!alive) return
 
       const WebGLFluid = mod.default ?? mod
-      const bg = theme === 'dark' ? DARK_BG : LIGHT_BG
+      const pickColor = () => getPurpleBlueColor(isLight)
 
-      let currentColor = getDarkBluePurplePinkColor()
-      const customSplatColor = {
+      let current = pickColor()
+      const splatColor = {
         get r() {
-          currentColor = getDarkBluePurplePinkColor()
-          return currentColor.r
+          current = pickColor()
+          return current.r
         },
         get g() {
-          return currentColor.g
+          return current.g
         },
         get b() {
-          return currentColor.b
+          return current.b
         },
       }
 
       WebGLFluid(canvas, {
         TRIGGER: 'hover',
-        IMMEDIATE: true,
+        IMMEDIATE: false,
         AUTO: false,
-        COLORFUL: true,
-        COLOR_UPDATE_SPEED: 4,
+        COLORFUL: false,
         PAUSED: false,
-        BACK_COLOR: bg,
+        BACK_COLOR: isLight ? { r: 255, g: 255, b: 255 } : DARK_BG,
         TRANSPARENT: true,
-        BRIGHTNESS: 0.3,
         BLOOM: false,
-        BLOOM_ITERATIONS: 8,
-        BLOOM_RESOLUTION: 256,
-        BLOOM_INTENSITY: 0.2,
-        BLOOM_THRESHOLD: 0.2,
-        DENSITY_DISSIPATION: 3.5,
-        VELOCITY_DISSIPATION: 1.5,
-        PRESSURE: 0.4,
-        CURL: 10,
-        SPLAT_RADIUS: 0.15,
-        SPLAT_FORCE: 3000,
-        SPLAT_COLOR: customSplatColor,
-        SHADING: false,
         SUNRAYS: false,
+        SHADING: false,
+        DENSITY_DISSIPATION: isLight ? 4 : 3.2,
+        VELOCITY_DISSIPATION: 1.55,
+        PRESSURE: 0.4,
+        CURL: 12,
+        SPLAT_RADIUS: 0.18,
+        SPLAT_FORCE: isLight ? 2600 : 3000,
+        SPLAT_COLOR: splatColor,
       })
     })
 
     return () => {
-      cancelled = true
+      alive = false
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerdown', onPointerDown)
+      canvas.remove()
     }
-  }, [theme])
-
-  // Forward pointer/touch events from window -> canvas
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const handlePointerMove = (e: PointerEvent | MouseEvent) => {
-      const rect = canvas.getBoundingClientRect()
-      const offsetX = e.clientX - rect.left
-      const offsetY = e.clientY - rect.top
-
-      const event = new MouseEvent('mousemove', {
-        clientX: e.clientX,
-        clientY: e.clientY,
-        bubbles: true,
-      })
-      Object.defineProperty(event, 'offsetX', { get: () => offsetX })
-      Object.defineProperty(event, 'offsetY', { get: () => offsetY })
-      canvas.dispatchEvent(event)
-    }
-
-    const handlePointerDown = (e: PointerEvent | MouseEvent) => {
-      const rect = canvas.getBoundingClientRect()
-      const offsetX = e.clientX - rect.left
-      const offsetY = e.clientY - rect.top
-
-      const event = new MouseEvent('mousedown', {
-        clientX: e.clientX,
-        clientY: e.clientY,
-        bubbles: true,
-      })
-      Object.defineProperty(event, 'offsetX', { get: () => offsetX })
-      Object.defineProperty(event, 'offsetY', { get: () => offsetY })
-      canvas.dispatchEvent(event)
-    }
-
-    const handleTouchMove = (e: TouchEvent) => {
-      const event = new TouchEvent('touchmove', {
-        touches: Array.from(e.touches) as unknown as Touch[],
-        targetTouches: Array.from(e.targetTouches) as unknown as Touch[],
-        changedTouches: Array.from(e.changedTouches) as unknown as Touch[],
-        bubbles: true,
-      })
-      canvas.dispatchEvent(event)
-    }
-
-    const handleTouchStart = (e: TouchEvent) => {
-      const event = new TouchEvent('touchstart', {
-        touches: Array.from(e.touches) as unknown as Touch[],
-        targetTouches: Array.from(e.targetTouches) as unknown as Touch[],
-        changedTouches: Array.from(e.changedTouches) as unknown as Touch[],
-        bubbles: true,
-      })
-      canvas.dispatchEvent(event)
-    }
-
-    window.addEventListener('pointermove', handlePointerMove, { passive: true })
-    window.addEventListener('pointerdown', handlePointerDown, { passive: true })
-    window.addEventListener('touchmove', handleTouchMove, { passive: true })
-    window.addEventListener('touchstart', handleTouchStart, { passive: true })
-
-    return () => {
-      window.removeEventListener('pointermove', handlePointerMove)
-      window.removeEventListener('pointerdown', handlePointerDown)
-      window.removeEventListener('touchmove', handleTouchMove)
-      window.removeEventListener('touchstart', handleTouchStart)
-    }
-  }, [])
+  }, [isLight])
 
   return (
-    <canvas
-      ref={canvasRef}
+    <div
+      ref={hostRef}
+      className="hero-fluid-layer"
+      data-theme={theme}
       aria-hidden="true"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        pointerEvents: 'none',
-        zIndex: 0,
-        display: 'block',
-      }}
     />
   )
 }

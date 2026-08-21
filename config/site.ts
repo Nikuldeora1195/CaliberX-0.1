@@ -49,29 +49,121 @@ export const seo = {
 // ─── Navigation ───────────────────────────────────────────────────────────────
 
 export const nav = {
-  /** Dropdown nav groups shown in the top navigation */
-  groups: [
+  cta: {
+    label: 'Request a Quote',
+    href: '/contact',
+  },
+  simpleLinks: [
+    { label: 'Products', href: '/products' },
+    { label: 'Work', href: '/work' },
+    { label: 'About', href: '/about' },
+  ],
+}
+
+/** Services mega-menu — 3 lifecycle columns + featured card */
+export const servicesMegaMenu = {
+  label: 'Services',
+  columns: [
     {
-      label: 'Services',
-      links: [
-        ['Full-stack web', '/services/full-stack-web-development'],
-        ['Generative AI', '/services/generative-ai-and-automation'],
-        ['Cloud & DevOps', '/services/cloud-infrastructure-devops'],
-      ] as [string, string][],
+      badge: 'BUILD',
+      items: [
+        {
+          title: 'Full-stack platforms',
+          subtitle: 'Next.js, APIs, design systems',
+          href: '/services/full-stack-web-development',
+        },
+        {
+          title: 'Generative AI systems',
+          subtitle: 'RAG, agents, LLM pipelines',
+          href: '/services/generative-ai-and-automation',
+        },
+      ],
     },
     {
-      label: 'Explore',
-      links: [
-        ['Work', '/work'],
-        ['About', '/about'],
-        ['Contact', '/contact'],
-      ] as [string, string][],
+      badge: 'RUN',
+      items: [
+        {
+          title: 'Cloud infrastructure',
+          subtitle: 'Docker, CI/CD, observability',
+          href: '/services/cloud-infrastructure-devops',
+        },
+        {
+          title: 'Platform operations',
+          subtitle: 'Reliability, scaling, handoff',
+          href: '/services/cloud-infrastructure-devops',
+        },
+      ],
+    },
+    {
+      badge: 'GROW',
+      items: [
+        {
+          title: 'Technical growth engines',
+          subtitle: 'GEO, SEO, conversion systems',
+          href: '/services/technical-growth-engines',
+        },
+        {
+          title: 'Product iteration',
+          subtitle: 'Roadmaps, analytics, experiments',
+          href: '/contact',
+        },
+      ],
     },
   ],
-  /** Label and href for the primary nav CTA button */
-  cta: {
-    label: 'Start a conversation',
-    href: '/contact',
+  featured: {
+    badge: 'FEATURED',
+    title: 'Dedicated engineering squad',
+    description:
+      'Senior engineers embedded in your workflow — architecture, delivery, and post-launch stewardship without agency overhead.',
+    cta: { label: 'Hire Now', href: '/contact' },
+  },
+}
+
+/** Hire Developers mega-menu — tabbed subcategories */
+export const hireMegaMenu = {
+  label: 'Hire Developers',
+  tabs: [
+    {
+      id: 'app-web',
+      label: 'App & Web',
+      stacks: [
+        { group: 'Frontend', title: 'React / Next.js', subtitle: 'SSR, RSC, design systems' },
+        { group: 'Frontend', title: 'TypeScript', subtitle: 'Type-safe product interfaces' },
+        { group: 'Backend', title: 'Node / FastAPI', subtitle: 'APIs, auth, integrations' },
+        { group: 'Backend', title: 'Python', subtitle: 'Data pipelines & services' },
+        { group: 'Data', title: 'Postgres / Supabase', subtitle: 'Schema, RLS, realtime' },
+        { group: 'Data', title: 'Redis', subtitle: 'Caching & job queues' },
+      ],
+    },
+    {
+      id: 'ai-data',
+      label: 'AI & Data',
+      stacks: [
+        { group: 'AI', title: 'LangChain / Agents', subtitle: 'Tool use, orchestration' },
+        { group: 'AI', title: 'RAG pipelines', subtitle: 'Retrieval, evals, guardrails' },
+        { group: 'AI', title: 'OpenAI / Anthropic', subtitle: 'Model routing & fallbacks' },
+        { group: 'Data', title: 'Vector search', subtitle: 'Embeddings, hybrid retrieval' },
+        { group: 'Data', title: 'ETL / analytics', subtitle: 'Dashboards & reporting' },
+        { group: 'Data', title: 'MLOps', subtitle: 'Monitoring & cost control' },
+      ],
+    },
+    {
+      id: 'cloud-devops',
+      label: 'Cloud & DevOps',
+      stacks: [
+        { group: 'Cloud', title: 'Docker / K8s', subtitle: 'Containers & orchestration' },
+        { group: 'Cloud', title: 'AWS / GCP', subtitle: 'Infra as code, networking' },
+        { group: 'Cloud', title: 'Supabase', subtitle: 'Auth, storage, edge functions' },
+        { group: 'DevOps', title: 'GitHub Actions', subtitle: 'CI/CD pipelines' },
+        { group: 'DevOps', title: 'Terraform', subtitle: 'Reproducible environments' },
+        { group: 'DevOps', title: 'Observability', subtitle: 'Logs, metrics, tracing' },
+      ],
+    },
+  ],
+  banner: {
+    text: 'Hire dedicated engineers',
+    subtext: '14-day onboarding',
+    cta: { label: 'Get started', href: '/contact' },
   },
 }
 
@@ -303,7 +395,82 @@ export const projects = [
       'A high-conversion commerce system built around speed, clarity, and intelligent automation.',
     year: '2024',
   },
+  {
+    slug: 'synthetix-vector',
+    title: 'Synthetix Vector',
+    category: 'ENTERPRISE AI / WORKFLOW',
+    summary:
+      'An autonomous multi-agent mesh for compliance verification, audit trail mapping, and document analysis.',
+    year: '2025',
+  },
 ]
+
+// ─── Strategy Call Section ────────────────────────────────────────────────────
+
+export const strategyCall = {
+  eyebrow: 'FREE CONSULTATION',
+  heading: 'Free 30-min strategy call',
+  lede: "Let's discuss your project. Book a free consultation call.",
+  body:
+    '30 minutes with a senior engineer. Bring your use case. Leave with a clear next step, recommended approach, and an honest cost range — no sales pitch.',
+  primaryCta: { label: 'Discuss Your Project', href: '/contact' },
+  secondaryCta: { label: 'See Case Studies', href: '/work' },
+}
+
+// ─── Products Page ────────────────────────────────────────────────────────────
+
+export const productsPage = {
+  eyebrow: 'PRODUCTS / PLATFORMS',
+  heading: 'Tools we build',
+  headingSpan: 'and stand behind.',
+  intro:
+    'Product-grade systems born from client work — engineered for reliability, clarity, and long-term operation.',
+  items: [
+    {
+      slug: 'caliber-runtime',
+      name: 'Caliber Runtime',
+      category: 'AI / DECISION SYSTEMS',
+      tagline: 'Turn fragmented knowledge into clear next actions.',
+      description:
+        'A decision workspace with RAG retrieval, agent orchestration, and audit-friendly outputs for operational teams.',
+      status: 'Live',
+      features: ['Multi-source retrieval', 'Agent workflows', 'Role-based access', 'Export & audit trails'],
+      href: '/work/northstar-ai',
+      ctaLabel: 'View case study',
+    },
+    {
+      slug: 'vector-deploy',
+      name: 'Vector Deploy',
+      category: 'CLOUD / DEVOPS',
+      tagline: 'One-command staging to production pipelines.',
+      description:
+        'Opinionated deployment kit for Next.js + Python stacks with observability, secrets, and rollback baked in.',
+      status: 'Beta',
+      features: ['Docker-first', 'Preview environments', 'Health checks', 'Slack deploy alerts'],
+      href: '/services/cloud-infrastructure-devops',
+      ctaLabel: 'Explore capability',
+    },
+    {
+      slug: 'signal-growth',
+      name: 'Signal Growth Kit',
+      category: 'GROWTH / SEO',
+      tagline: 'Technical SEO and GEO automation for product teams.',
+      description:
+        'Structured content pipelines, schema automation, and performance monitoring for teams that ship fast.',
+      status: 'Live',
+      features: ['Schema automation', 'Core Web Vitals tracking', 'Content experiments', 'Search console sync'],
+      href: '/services/technical-growth-engines',
+      ctaLabel: 'Explore capability',
+    },
+  ],
+  ctaBand: {
+    eyebrow: 'CUSTOM BUILD',
+    heading: 'Need something built from scratch?',
+    body: 'We design and ship bespoke platforms when off-the-shelf tools are not enough.',
+    ctaLabel: 'Request a Quote',
+    href: '/contact',
+  },
+}
 
 // ─── About Page ───────────────────────────────────────────────────────────────
 
@@ -313,6 +480,51 @@ export const about = {
   headingSpan: 'Large surface area.',
   intro:
     'withCaliberX is an independent engineering studio for ambitious teams who need a partner that can think across product, systems, AI, and growth.',
+  vision: {
+    label: 'VISION',
+    heading: 'Make complex technology feel clear, useful, and inevitable.',
+    body:
+      'We believe the best technical work is not loud. It gives a team leverage, removes uncertainty, and makes the next decision easier.',
+  },
+  goal: {
+    label: 'GOAL',
+    heading: 'Ship systems that compound — not demos that decay.',
+    body:
+      'Every engagement should leave you with architecture you understand, code your team can extend, and a roadmap that reflects reality — not optimism.',
+  },
+  team: {
+    eyebrow: 'THE TEAM',
+    heading: 'Senior engineers.',
+    headingSpan: 'Direct access.',
+    intro:
+      'No account-manager layer. You work with the people designing the system, writing the code, and answering hard questions in Slack.',
+    members: [
+      {
+        name: 'Alex Mercer',
+        role: 'Founding Engineer',
+        focus: 'Full-stack · AI systems',
+        bio: 'Leads architecture for web platforms and agentic workflows. Previously scaled SaaS products from MVP to multi-region deploy.',
+      },
+      {
+        name: 'Priya Nair',
+        role: 'Lead Cloud Engineer',
+        focus: 'DevOps · Infrastructure',
+        bio: 'Designs resilient cloud foundations — Docker, CI/CD, observability, and cost-aware scaling for production workloads.',
+      },
+      {
+        name: 'Jordan Lee',
+        role: 'AI Systems Engineer',
+        focus: 'RAG · LLM pipelines',
+        bio: 'Builds retrieval systems with guardrails, evals, and operational monitoring so AI features stay useful after launch.',
+      },
+      {
+        name: 'Sam Ortiz',
+        role: 'Product Engineer',
+        focus: 'Growth · Frontend',
+        bio: 'Connects product UX, performance, and technical SEO into systems that help teams ship and get discovered.',
+      },
+    ],
+  },
   cards: [
     {
       label: 'VISION',
