@@ -22,23 +22,6 @@ function hsvToRgb(h: number, s: number, v: number) {
   return { r, g, b }
 }
 
-/** Purple + dark blue dye (webgl-fluid uses 0–1, default splats peak ~0.15) */
-function getPurpleBlueColor(isLight: boolean) {
-  const roll = Math.random()
-  const h = roll < 0.8
-    ? 0.69 + Math.random() * 0.11
-    : 0.6 + Math.random() * 0.07
-
-  const rgb = hsvToRgb(h, 0.92 + Math.random() * 0.08, 0.58 + Math.random() * 0.34)
-  const gain = isLight ? 0.24 + Math.random() * 0.12 : 0.14 + Math.random() * 0.1
-
-  return {
-    r: rgb.r * gain,
-    g: rgb.g * gain,
-    b: rgb.b * gain,
-  }
-}
-
 export function HeroFluid({ theme }: { theme: 'light' | 'dark' }) {
   const hostRef = useRef<HTMLDivElement>(null)
   const isLight = theme === 'light'
@@ -53,8 +36,16 @@ export function HeroFluid({ theme }: { theme: 'light' | 'dark' }) {
     host.appendChild(canvas)
 
     let alive = true
+    let rampStartTime: number | null = null
+    let leaveTimeout: ReturnType<typeof setTimeout> | null = null
 
     const forwardPointer = (clientX: number, clientY: number, type: 'move' | 'down') => {
+      if (rampStartTime === null) rampStartTime = performance.now()
+      if (leaveTimeout) {
+        clearTimeout(leaveTimeout)
+        leaveTimeout = null
+      }
+
       const rect = canvas.getBoundingClientRect()
       const event = new MouseEvent(type === 'move' ? 'mousemove' : 'mousedown', {
         clientX,
@@ -68,15 +59,40 @@ export function HeroFluid({ theme }: { theme: 'light' | 'dark' }) {
 
     const onPointerMove = (e: PointerEvent) => forwardPointer(e.clientX, e.clientY, 'move')
     const onPointerDown = (e: PointerEvent) => forwardPointer(e.clientX, e.clientY, 'down')
+    const onMouseLeaveDoc = () => {
+      // Debounce so a quick re-entry doesn't reset the ramp
+      leaveTimeout = setTimeout(() => {
+        rampStartTime = null
+      }, 300)
+    }
 
     window.addEventListener('pointermove', onPointerMove, { passive: true })
     window.addEventListener('pointerdown', onPointerDown, { passive: true })
+    document.addEventListener('mouseleave', onMouseLeaveDoc)
 
     import('webgl-fluid').then((mod) => {
       if (!alive) return
 
       const WebGLFluid = mod.default ?? mod
-      const pickColor = () => getPurpleBlueColor(isLight)
+
+      const pickColor = () => {
+        const elapsed = rampStartTime === null ? 0 : performance.now() - rampStartTime
+        const rampProgress = Math.min(1, elapsed / 300) // 0 -> 1 over first 600ms
+
+        // Single, narrow purple hue band — no pink, no blue
+        const h = 0.735 + Math.random() * 0.055
+        const rgb = hsvToRgb(
+          h,
+          0.88 + Math.random() * 0.08,
+          0.55 + Math.random() * 0.25
+        )
+
+        // Start soft (~35% strength), ease up to full over the ramp window
+        const baseGain = isLight ? 0.26 + Math.random() * 0.1 : 0.16 + Math.random() * 0.08
+        const gain = baseGain * (0.35 + 0.65 * rampProgress)
+
+        return { r: rgb.r * gain, g: rgb.g * gain, b: rgb.b * gain }
+      }
 
       let current = pickColor()
       const splatColor = {
@@ -99,24 +115,26 @@ export function HeroFluid({ theme }: { theme: 'light' | 'dark' }) {
         COLORFUL: false,
         PAUSED: false,
         BACK_COLOR: isLight ? { r: 255, g: 255, b: 255 } : DARK_BG,
-        TRANSPARENT: true,
+        TRANSPARENT: false,
         BLOOM: false,
         SUNRAYS: false,
         SHADING: false,
-        DENSITY_DISSIPATION: isLight ? 4 : 3.2,
-        VELOCITY_DISSIPATION: 1.55,
-        PRESSURE: 0.4,
-        CURL: 12,
-        SPLAT_RADIUS: 0.18,
-        SPLAT_FORCE: isLight ? 2600 : 3000,
+        DENSITY_DISSIPATION: isLight ? 1.2 : 1.6,
+        VELOCITY_DISSIPATION: 1.1,
+        PRESSURE: 0.45,
+        CURL: 20,
+        SPLAT_RADIUS: 0.48,
+        SPLAT_FORCE: isLight ? 1800 : 2200,
         SPLAT_COLOR: splatColor,
       })
     })
 
     return () => {
       alive = false
+      if (leaveTimeout) clearTimeout(leaveTimeout)
       window.removeEventListener('pointermove', onPointerMove)
       window.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('mouseleave', onMouseLeaveDoc)
       canvas.remove()
     }
   }, [isLight])
